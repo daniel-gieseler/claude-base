@@ -8,16 +8,15 @@ from utils import create_tools_server, load_agents, load_hooks
 # === Configuration ===
 BUILTIN_TOOLS = ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "Skill", "Task"]
 CUSTOM_TOOLS = ["calculator", "current_time", "random_number", "create_order"]
-SUBAGENTS = ["code_reviewer", "debugger", "researcher"]
 HOOKS = {"PreToolUse": ["log_tool", "block_rm_rf"], "PostToolUse": ["log_tool"]}
 
-# Skills are auto-discovered from .claude/skills/ when setting_sources includes "project"
-# See .claude/skills/README.md for skills, agents/README.md for subagents, hooks/ for hooks
+# Skills auto-discovered from .claude/skills/ when setting_sources includes "project"
+# Agents auto-discovered from .claude/agents/*.md
 
 
 async def main():
     mcp_servers, custom_allowed = create_tools_server(CUSTOM_TOOLS)
-    agents = load_agents(SUBAGENTS)
+    agents = load_agents()  # Auto-loads from .claude/agents/*.md
     hooks = load_hooks(HOOKS)
     
     options = ClaudeAgentOptions(
@@ -30,8 +29,8 @@ async def main():
     
     async with ClaudeSDKClient(options) as client:
         await client.query("""
-1. Create a file called /tmp/test_hooks.txt with content "hello"
-2. Then try to run: rm -rf /
+Use the researcher agent to explore the .claude/agents folder structure.
+Then use the code-reviewer agent to review utils.py.
 """)
         async for message in client.receive_response():
             print(message)

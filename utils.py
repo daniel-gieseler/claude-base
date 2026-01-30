@@ -6,21 +6,43 @@ from pydantic import BaseModel, ValidationError
 from claude_agent_sdk import tool as sdk_tool, create_sdk_mcp_server, AgentDefinition, HookMatcher
 
 
-def load_agents(agent_names: list[str]) -> dict[str, AgentDefinition]:
-    """Load agent definitions by name from the agents module.
+def load_agents(agents_dir: str = ".claude/agents") -> dict[str, AgentDefinition]:
+    """Load agent definitions from markdown files in agents directory.
     
     Args:
-        agent_names: List of agent names (e.g., ["code_reviewer", "debugger"])
+        agents_dir: Path to agents directory (default: .claude/agents)
         
     Returns:
         Dict mapping agent name to AgentDefinition
     
     Usage:
-        SUBAGENTS = ["code_reviewer", "debugger", "researcher"]
-        agents = load_agents(SUBAGENTS)
+        agents = load_agents()  # loads from .claude/agents/
     """
-    import agents as agents_module
-    return {name: getattr(agents_module, name) for name in agent_names}
+    from pathlib import Path
+    import yaml
+    
+    agents = {}
+    for md_file in Path(agents_dir).glob("*.md"):
+        content = md_file.read_text()
+        if not content.startswith("---"):
+            continue
+        
+        # Split frontmatter and body
+        _, fm, body = content.split("---", 2)
+        meta = yaml.safe_load(fm)
+        
+        # Parse tools (comma-separated string or list)
+        tools = meta.get("tools")
+        if isinstance(tools, str):
+            tools = [t.strip() for t in tools.split(",")]
+        
+        agents[meta["name"]] = AgentDefinition(
+            description=meta["description"],
+            prompt=body.strip(),
+            tools=tools,
+            model=meta.get("model"),
+        )
+    return agents
 
 
 def load_hooks(config: dict[str, list[str]]) -> dict[str, list[HookMatcher]]:

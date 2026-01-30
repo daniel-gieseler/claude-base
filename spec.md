@@ -25,7 +25,7 @@ Notice that tools, subagents and skills are also callable.
 Can be either loaded by default or when requested.
 We need to understand how to set this distinction.
 Also understand how to retrieve them efficiently and precisely.
-I remember reading somehitng in the docs about a search feature that uses regex or bm25...
+https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool
 
 
 ---
