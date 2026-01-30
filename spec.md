@@ -37,3 +37,7 @@ Always do the minimal implementation to illustrate and educate the utilization o
 [X] create a few custom tools to complete the current built-in tools
 
 [X] create dummy custom skills (see .claude/skills/)
+
+[X] create dummy subagents (see agents/)
+
+[X] create dummy hooks (see hooks/)
