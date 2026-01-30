@@ -35,3 +35,5 @@ Always do the minimal implementation to illustrate and educate the utilization o
 [X] build a minimalistic client call with the built=in tools listed and documented in the script, we will select some of them.
 
 [X] create a few custom tools to complete the current built-in tools
+
+[X] create dummy custom skills (see .claude/skills/)

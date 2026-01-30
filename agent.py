@@ -1,54 +1,32 @@
+"""Agent using modular tools and skills."""
+
 import anyio
 from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions
+from utils import create_tools_server
 
-# All built-in tools available in Claude Agent SDK
-BUILTIN_TOOLS = [
-    # === Core ===
-    "Read",           # read file contents (supports images, PDFs)
-    "Write",          # write/create files
-    "Edit",           # string replacement edits in files
-    "Glob",           # find files by pattern
-    "Grep",           # search file contents with regex
-    "Bash",           # execute shell commands
-    
-    # === Shell ===
-    #"BashOutput",     # get output from background shells
-    #"KillBash",       # kill background bash process
-    
-    # === Web ===
-    #"WebFetch",       # fetch URL and process content
-    #"WebSearch",      # search the web
-    
-    # === Subagents ===
-    #"Task",           # launch subagent for complex tasks
-    #"TaskOutput",     # (internal) output from subagents
-    #"TaskStop",       # stop a running subagent
-    
-    # === User Interaction ===
-    #"AskUserQuestion", # ask user clarifying questions
-    #"EnterPlanMode",  # enter read-only planning mode
-    #"ExitPlanMode",   # exit plan mode with a plan
-    
-    # === MCP Resources ===
-    #"ListMcpResources", # list available MCP resources
-    #"ReadMcpResource",  # read MCP resource content
-    
-    # === Other ===
-    #"TodoWrite",      # manage task/todo lists
-    #"Skill",          # load skills from .claude/skills/
-    #"ToolSearch",     # search for available tools
-    #"NotebookEdit",   # edit Jupyter notebook cells
-]
+
+# === Configuration ===
+BUILTIN_TOOLS = ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "Skill"]
+CUSTOM_TOOLS = ["calculator", "current_time", "random_number", "create_order"]
+
+# Skills are auto-discovered from .claude/skills/ when setting_sources includes "project"
+# See .claude/skills/README.md for how to create custom skills
 
 
 async def main():
+    mcp_servers, custom_allowed = create_tools_server(CUSTOM_TOOLS)
+    
     options = ClaudeAgentOptions(
-        allowed_tools=BUILTIN_TOOLS,
+        mcp_servers=mcp_servers,
+        allowed_tools=BUILTIN_TOOLS + custom_allowed,
+        setting_sources=["project"],  # Load skills from .claude/skills/
     )
+    
     async with ClaudeSDKClient(options) as client:
-        await client.query("What is 2 + 2?")
+        await client.query("Review this code for issues: def add(a, b): return a + b")
         async for message in client.receive_response():
             print(message)
+
 
 if __name__ == "__main__":
     anyio.run(main)
